@@ -1,0 +1,208 @@
+LivingNorsemen-0.1.0-beta Mod Extension:
+
+Requirements:
+BepInEx
+YamIDotNet (YamIDotNet.dll)
+VikingNPC (Norsemen.dll)
+
+About:
+- This is a mod-extension to Rusty's VikingNPC mod. This mod utilizes VikingNPC mod as a base. It adds some more features such as
+  more jobs, NPC controls, container tags, and QoL such as persistence after NPC death and equipped items displayed correctly.
+  This mod is based off of the Spring 2026 version of VikingNPC, after Viking raids & villages had been removed.
+  I built this mod based of my love of Valheim but not wanting the world to feel so alone, to try building a mod for the first
+  time, and to make the game something I'd enjoy even more. 
+  I will make my extension available and may entertain suggestions for future features or bug updates. 
+  I have received Rusty's blessing to continue updates to his base mod, which is needed for this mod to work.
+  *Since I am making this for fun in my free time, testing has been limited as I am building this while I progress through the
+   game at my own pace. If functionality suffers in later zones and you let me know, I'll take note but I can't promise quick
+   updates. 
+
+Jobs:
+Lumberjack (Axe)
+Miner (Pickaxe)
+Fisherman (Fishing Rod & Bait)
+Guard-Stationary (menu options)
+Guard-Patrol (menu options)
+Farmer (Cultivator)
+Cook-Meats (meat-source Trophies)
+
+Features:
+Home-Point
+Work-Point
+Patrol-Point (Guards)
+"Go To" (Home/Work) interaction commands
+Tagged storage containers
+Focused Work (Lumberjack, Miner, Fisher, & Cook)
+Shifts (Day / Night)
+
+Behaviors:
+- Untamed NPC
+	- They will appear randomly during your adventures.
+	- You will need to feed them to "tame" them. They will not be afraid of you.
+	- You can 'Steal' from them. -this might make them hostile towards you.
+	- If they die while "wild", they cannot be resurrected.
+
+- Once a NPC is tamed, the player will have the following interaction options:
+	[E] Follow / Stay
+	[Shift + E] Rename
+	[LeftAlt + E] Open (NPC Inventory)
+
+- When the NPC's Inventory is open, Button option should appear along the bottom:
+	Aggressive / Passive
+		Aggressive will engage threats. Passive will run from threats.
+	Guard / Patrol
+		Guard will make NPC stay in that spot/ Patrol will let the NPC move about.
+	Public / Private
+		Public allows other players to interact with NPC, Private allows on the host-player to interact with NPCs
+	Assign Home
+		Will record the spot the NPC is currently standing as it's Home-Point.
+	Assign Work
+		Will record the spot the NPC is currently standing as it's Work-Point.
+	*Assign Patrol B
+		For NPCs assigned as "Guards", Will record the spot the NPC is currently standing as it's Patrol Point.
+
+- Once a Home and or Work Point has been assigned, the player will have the following interaction options:
+	[H] Go Home  (NPC goes to Home-Point)
+	[K] Go To Work (NPC goes to Work-Point)
+
+- Shifts: Day / Night
+	- Day Shifts occur when the "Day" number is displayed. NPCs without a torch in their inventory will 
+	  proceed to their Work-Point. Once at their Work-Point, they will perform whatever job has been assigned.
+	- Night Shifts occur at night (when the "Cold" status appears on the player outside while sun is down).
+          NPCs with a torch in their inventory will proceed to their Work-Point. Once at their Work-Point, 
+	  they will perform whatever job has been assigned.
+
+- Eating:
+	- NPCs with food in their inventory will periodically consume it to maintain a "Happy" status.
+		> NPC must be in a "Happy" status for them to perform their assigned job.
+        - NPCs consume food in their inventory when they are in a "Hungry" status.
+		> NPC in a "Hungry" status might not perform their assigned job.
+	- To tell the status of the NPC, mouse over the NPC. Next to their name will show their status.
+		'Name ( Status )'
+	- The player can feed an NPC by placing a food on their action bar and pressing the corresponding key
+	  of the food while mousing over the NPC.
+	- The NPC will not consume food or be fed while in a "Happy" status.
+
+- Following:
+	- NPC will follow the player if set.
+	- NPC will teleport to player's position if the separation distance exceeds 20-30m & health is above 10%.
+		- this includes portals & dungeons.
+	- NPC will attempt to sit/hold on if following you on a boat. 
+
+- Tamed NPC Death:
+	- NPC will drop a tomb upon death.
+	- Player can interact with the tomb:
+		> [E] View the inventory
+		> [Shift + E] Resurrect NPC
+	- ***It is HIGHLY recommended you save after resurrecting an NPC. 
+		- There is a chance that exiting the game without saving, after an NPC has be resurrected, may
+		  result in the NPC completely disappearing (along with items in their inventory) upon logging
+		  back in.
+
+- Typical NPC Cycle:
+	- NPC becomes active at start of their shift. Travel paths to Work-Points (or 'Cooked Foods' containers if established) are calculated.
+	- NPC in travel will open doors within 4m of NPC. (unintended door opening may occur)
+	- NPC will collect 3 cooked food items if "Cooked Foods" container is withing their shift-start radius.
+	- NPC will reach their established Work-Points and begin their jobs.
+	- Once the Shift change trigger is hit, NPCs with jobs that produce items will attempt to deposit items in tagged containers (if established)
+	- NPC will travel to Home-Point (or closest spot to it if obstructed).
+	- NPC in travel will open doors within 4m of NPC. These doors should close behind them IF that NPC opened it.
+
+Tagged Storage Containers:
+- EVERY kind of container will now show a button for assigning a tag to it.
+- Current tags and function:
+	- "Deposit: None" - NPCs will not interact with it.
+	- "Deposit: Farmer" - NPC meeting 'Farmer' job criteria will place harvested items in this container.
+	- "Deposit: Lumberjack" - NPC meeting 'Lumberjack' job criteria will place wood, sap, feathers in this container.
+	- "Deposit: Miner" - NPC meeting 'Miner' job criteria will place ore & stone in this container.
+	- "Deposit: Fisherman" - NPC meeting 'Fisherman' job criteria will place fish in this container.
+	- "Deposit: Raw Meat" - NPC meeting 'Cook' job criteria will take raw meats from this container.
+	- "Deposit: Cooked Foods" - NPC meeting 'Cook' job criteria will place cooked foods in this container.
+				  - NPCs within a radius of this box will take 3 cooked foods from this container.
+
+Jobs:
+- Lumberjack: (Axe)
+	** It's recommended to not place other job related items in NPC's inventory.
+	* Player must place an axe, to the appropriate strength of the tree to collect, in the NPC's inventory.
+	* Player can focus the NPC to chop specific trees by placing the corresponding tree seed in their inventory.
+	* Player should set the NPC's Work-Point near desired trees to collect.
+	- NPC will work in the "Happy" state (fed).
+	- NPC's work area is 50m-radius from Work-Point.
+	- NPC will randomly run to a tree that meets their job criteria, and begin chopping.
+		> The tree chopped provides the wood, sap, & feathers that would normally drop if felled.
+	- The trees will NOT be damaged/felled. -no need for replanting.
+	- At end of shift, if a storage container tagged "Lumberjack" is nearby, all Wood, Sap, Feather items 
+	  in NPC's inventory will be deposited in that box.
+
+- Miner: (Pickaxe)
+	** It's recommended to not place other job related items in NPC's inventory.
+	* Player must place a pickaxe, to the appropriate strength of the ore to collect, in the NPC's inventory.
+	* Player can focus the NPC to tap specific ore-nodes by placing the corresponding metal bar in their inventory.
+	* Player should set the NPC's Work-Point near desired ore-node to collect.
+	- NPC will work in the "Happy" state (fed).
+	- NPC's work area is 50m-radius from Work-Point.
+	- NPC will randomly run to a ore-node that meets their job criteria, and begin tapping.
+		> The ore-node tapped provides the ore & stone.
+	- The ore-node will NOT be damaged/destroyed. 
+	- At end of shift, if a storage container tagged "Miner" is nearby, all ore & stone in NPC's inventory 
+	  will be deposited in that box.
+
+- Fisher: (Fishing Rod & Bait)
+	** It's recommended to not place other job related items in NPC's inventory.
+	* Player must place a Fishing Rod & Bait in the NPC's inventory.
+	* Player can focus the NPC to catch specific biome fish by placing the corresponding biome bait in their inventory.
+	* Player should set the NPC's Work-Point near the coast & near desired fish.
+	- NPC will work in the "Happy" state (fed).
+	- NPC's work area is 50m-radius from Work-Point.
+	- NPC will randomly run to a low point near water meets their job criteria, and begin casting.
+	- Fish are NOT physically caught. 
+	- At end of shift, if a storage container tagged "Fisherman" is nearby, all fish in NPC's inventory 
+	  will be deposited in that box.
+
+- Guard: 
+	** It's recommended to not place other job related items in NPC's inventory.
+	* Player must select "Aggressive" & "Guard" from the NPC inventory buttons.
+	* Player should equip NPC with appropriate weapons / gear. (Avoid Axes)
+	* Player should set the NPC's Work-Point at where they want an NPC to defend.
+	* Player can make the guard patrol by assigning a "Patrol B" point.
+		> Have NPC follow the player to the spot the Guard should patrol to, then select "Assign Patrol B".
+	- NPC will work in any state.
+	- NPC will target threats in the area, roughly < 20m-radius from the NPC.
+	- If assigned to patrol, NPC will walk between their established Work-Point & Patrol-Point.
+	- NPCs on patrol will re-ignite any light source & close any open doors within 4m of the NPC.
+	- Weapon durability can diminish & projectiles will be consumed upon use.
+
+
+- Farmer: (Cultivator)
+	** It's recommended to not place other job related items in NPC's inventory.
+	* Player must plant seed or food bearing plant (either will produce the food).
+	* Player must build beehives near established Work-Point(for Honey).
+	* Player must place a cultivator in the NPC's inventory.
+	* Player sets the NPC's Work-Point in middle of planted field.
+	- NPC will work in the "Happy" state (fed).
+	- NPC's work area is 5m-radius from Work-Point.
+	- NPC will randomly walk to a point and kneel down (as if picking).
+		> If a plant is there, a chance to pick it and collect honey(if hive is near) is achieved.
+	- Plant will NOT physically be picked. -no need for replanting.
+	- At end of shift, if a storage container tagged "Farmer" is nearby, all plant foods in NPC's inventory 
+	  will be deposited in that box. 
+
+- Cook (Meats): 
+	** It's recommended to not place other job related items in NPC's inventory.
+	* Player must select "Passive" & "Guard" from the NPC inventory buttons.
+	* Player must establish the following:
+		- A cooking station
+		- A container set to "Raw Meat"
+		- *Recommended: A container set to "Cooked Food" within 20m of Work-Point.
+	* Player must place the corresponding trophy of the meat's source in the NPC's inventory.
+		- NPC will only cook "Raw Fish" without a trophy.
+	* Player sets the NPC's Work-Point near the cooking station & "Raw Meat" container.
+	- NPC will work in any state. (Note: NPC will eat the cooked food in it's inventory if in a "Hungry" status)
+	- NPC will got to and check the "Raw Meat" container for meat to cook. 
+		> If there are no meats matching the trophies or raw fish, the NPC will go back to Work-Point and check again in 2 mins.
+	- NPC will put the meat from their inventory on to the cooking station.
+	- NPC will collect ANY cooked meat and coal from cooking station.
+	- Meats are removed from container (products are NOT simulated).
+	- At end of shift, NPC will stay until all cooked meat is removed from cooking station.
+	- At end of shift, if a storage container tagged "Cooked Food" is nearby, all cooked foods in NPC's inventory 
+	  will be deposited in that box.
