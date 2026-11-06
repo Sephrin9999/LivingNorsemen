@@ -449,6 +449,7 @@ namespace LivingNorsemen
             return totalTaken;
         }
 
+
         public static bool DepositGoods(
             Viking viking,
             ProfessionDepositBox depositBox,
@@ -459,6 +460,7 @@ namespace LivingNorsemen
                 $"Viking={(viking != null ? viking.GetName() : "NULL")}, " +
                 $"Box={(depositBox != null ? depositBox.name : "NULL")}"
             );
+
             if (viking == null || depositBox == null)
             {
                 return false;
@@ -478,10 +480,7 @@ namespace LivingNorsemen
             Inventory chestInventory =
                 container.GetInventory();
 
-            if (
-                villagerInventory == null ||
-                chestInventory == null
-            )
+            if (villagerInventory == null || chestInventory == null)
             {
                 return false;
             }
@@ -510,16 +509,62 @@ namespace LivingNorsemen
                     continue;
                 }
 
+                int villagerBefore =
+                    CountAllowedItems(viking, profession);
+
+                int chestBefore =
+                    chestInventory.NrOfItems();
+
                 chestInventory.MoveItemToThis(
                     villagerInventory,
                     item
                 );
 
-                depositedAny = true;
+                int villagerAfter =
+                    CountAllowedItems(viking, profession);
+
+                int chestAfter =
+                    chestInventory.NrOfItems();
+
+                if (profession == "Lumberjack")
+                {
+                    Debug.Log(
+                        $"[Lumberjack Deposit] " +
+                        $"Item={prefabName}, " +
+                        $"VillagerBefore={villagerBefore}, " +
+                        $"VillagerAfter={villagerAfter}, " +
+                        $"ChestBefore={chestBefore}, " +
+                        $"ChestAfter={chestAfter}"
+                    );
+                }
+
+                if (villagerAfter < villagerBefore)
+                {
+                    depositedAny = true;
+                }
+            }
+
+            // Check for remaining lumberjack goods AFTER all transfers.
+            if (profession == "Lumberjack")
+            {
+                int remaining =
+                    CountAllowedItems(viking, profession);
+
+                if (remaining > 0)
+                {
+                    Debug.LogWarning(
+                        $"[Lumberjack Deposit] {viking.GetName()} " +
+                        $"still carries {remaining} items after depositing. " +
+                        $"Deposit box may be full."
+                    );
+
+                    return false;
+                }
             }
 
             return depositedAny;
         }
+
 
         public static int CountAllowedItems(
             Viking viking,

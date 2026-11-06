@@ -2,6 +2,17 @@
 
 All notable changes to LivingNorsemen will be documented here.
 
+## 0.1.1-beta
+
+### Added
+- NPCs set as [Aggressive] + [Guard] will attack any enemies on sight! 
+  (-at range...still working on stationary guards at melee)
+
+### Known Bugs
+- NPC might not put collected goods in assigned containers.
+- Assigning an NPC a home-point will display messages -these have no impact to the assigning of the home-point
+  (Ignore the messages)
+
 ## 0.1.0-beta
 
 Initial public beta release.

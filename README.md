@@ -1,6 +1,6 @@
 # LivingNorsemen
 
-**Current Version:** 0.1.0-beta
+**Current Version:** 0.1.1-beta
 
 LivingNorsemen is a gameplay extension for **VikingNPC Continued** that expands Norsemen into working members of your Valheim settlement.
 

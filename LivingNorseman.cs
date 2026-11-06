@@ -54,6 +54,20 @@ namespace LivingNorsemen
                 new[] { typeof(float), typeof(Vector3), typeof(float), typeof(bool) }
             );
 
+        private static readonly System.Reflection.MethodInfo SetAlertedMethod =
+            AccessTools.Method(
+                typeof(MonsterAI),
+                "SetAlerted",
+                new[] { typeof(bool) }
+            );
+
+        private static readonly System.Reflection.MethodInfo SetTargetMethod =
+            AccessTools.Method(
+                typeof(VikingAI),
+                "SetTarget",
+                new[] { typeof(Character) }
+            );
+
         private readonly AccessTools.FieldRef<VikingAI, bool> hasWorkTargetRef =
             AccessTools.FieldRefAccess<VikingAI, bool>("hasWorkTarget");
 
@@ -78,6 +92,11 @@ namespace LivingNorsemen
         private float doorInteractionCooldown;
         private float patrolUtilityScanTimer = 0f;
         private Door lastOpenedDoor;
+        private const float GuardEngagementRange = 20f;
+        private const float GuardThreatScanInterval = 0.5f;
+        private float guardThreatScanTimer = 0f;
+
+
 
         private float timer = 0f;
 
@@ -93,6 +112,7 @@ namespace LivingNorsemen
         public Vector3 PatrolPointB { get; private set; }
         public bool HasPatrolPointB { get; private set; }
         private bool patrolHeadingToB = true;
+               
 
         //------------------------------------------------------------------------
         private void Awake()
@@ -367,6 +387,116 @@ namespace LivingNorsemen
             }
         }
         //------------------------------------------------------------------------
+        private void CheckGuardThreats()
+        {
+            guardThreatScanTimer -= Time.deltaTime;
+
+            if (guardThreatScanTimer > 0f)
+            {
+                return;
+            }
+
+            guardThreatScanTimer = GuardThreatScanInterval;
+
+            if (ai == null)
+            {
+                return;
+            }
+
+            Viking viking =
+                GetComponent<Viking>();
+
+            if (
+                viking == null ||
+                ai.m_moveType != Movement.Guard ||
+                ai.m_behaviour != Emotion.Aggressive
+            )
+            {
+                return;
+            }
+
+            Character[] characters =
+                FindObjectsByType<Character>(
+                    FindObjectsSortMode.None
+                );
+
+            Character nearestEnemy = null;
+            float nearestDistance = GuardEngagementRange;
+
+            foreach (Character character in characters)
+            {
+                if (
+                    character == null ||
+                    character == viking ||
+                    character.IsDead()
+                )
+                {
+                    continue;
+                }
+
+                float distance =
+                    Vector3.Distance(
+                        transform.position,
+                        character.transform.position
+                    );
+
+                if (distance > nearestDistance)
+                {
+                    continue;
+                }
+
+                if (!BaseAI.IsEnemy(viking, character))
+                {
+                    continue;
+                }
+
+                nearestEnemy = character;
+                nearestDistance = distance;
+            }
+
+            if (nearestEnemy == null)
+            {
+                return;
+            }
+
+            Traverse aiTraverse = Traverse.Create(ai);
+
+            aiTraverse
+                .Field("m_vikingTargetCreature")
+                .SetValue(nearestEnemy);
+
+            aiTraverse
+                .Field("m_targetCreature")
+                .SetValue(nearestEnemy);
+
+            aiTraverse
+                .Field("m_vikingTimeSinceSensedTargetCreature")
+                .SetValue(0f);
+
+            aiTraverse
+                .Field("m_vikingLastKnownTargetPos")
+                .SetValue(nearestEnemy.transform.position);
+
+            aiTraverse
+                .Field("m_vikingBeenAtLastPos")
+                .SetValue(false);
+
+            aiTraverse
+                .Field("m_vikingTargetStatic")
+                .SetValue(null);
+
+            SetAlertedMethod?.Invoke(
+                ai,
+                new object[] { true }
+            );
+
+            // Request the Guard to face its acquired enemy.
+            aiTraverse
+                .Method("LookAt", new Type[] { typeof(Vector3) })
+                .GetValue(nearestEnemy.GetTopPoint());
+        }
+
+        //------------------------------------------------------------------------
         private void DepositFarmerGoods()
         {
             Viking viking = GetComponent<Viking>();
@@ -385,7 +515,7 @@ namespace LivingNorsemen
         }
 
         //------------------------------------------------------------------------
-        private void DepositLumberjackGoods()
+        private bool DepositLumberjackGoods()
         {
             Viking viking = GetComponent<Viking>();
 
@@ -395,7 +525,7 @@ namespace LivingNorsemen
                     "Lumberjack"
                 );
 
-            ProfDepotService.DepositGoods(
+            return ProfDepotService.DepositGoods(
                 viking,
                 depositBox,
                 "Lumberjack"
@@ -959,6 +1089,8 @@ namespace LivingNorsemen
             }
         }
 
+        
+        
         //------------------------------------------------------------------------
         public void CancelFarmingState()
         {
@@ -1113,7 +1245,14 @@ namespace LivingNorsemen
         private void Update()
         {
 
-
+            if (
+                ai != null &&
+                ai.m_moveType == Movement.Guard &&
+                ai.m_behaviour == Emotion.Aggressive
+            )
+            {
+                CheckGuardThreats();
+            }
             //------------------------------------------------------------------------
             if (
                 HasHome &&
@@ -1250,7 +1389,15 @@ namespace LivingNorsemen
                                 $"[LivingNorsemen] {name} reached Lumberjack deposit box."
                             );
 
-                            DepositLumberjackGoods();
+                            bool depositComplete = DepositLumberjackGoods();
+
+                            if (!depositComplete)
+                            {
+                                Debug.LogWarning(
+                                    $"[Lumberjack] {name} could not deposit all goods. " +
+                                    $"The deposit box may be full."
+                                );
+                            }
 
                             IssueCommand(VillagerCommand.GoHome);
                         }
@@ -1724,7 +1871,7 @@ namespace LivingNorsemen
 
             }
             //------------------------------------------------------------------------
-
+            
             //---PATROL
             if (
                 CurrentCommand == VillagerCommand.None &&
@@ -1967,7 +2114,17 @@ namespace LivingNorsemen
                         transform.position,
                         "Fisherman"
                     );
-
+                Debug.Log(
+                    $"[Evening Deposit Check] " +
+                    $"NPC={viking.GetName()} | " +
+                    $"Axe={viking.m_axe != null} | " +
+                    $"Pickaxe={viking.m_pickaxe != null} | " +
+                    $"LumberjackBox={lumberjackDeposit != null} | " +
+                    $"MinerBox={minerDeposit != null} | " +
+                    $"FishermanBox={fishermanDeposit != null} | " +
+                    $"FishCount={ProfDepotService.CountAllowedItems(viking, "Fisherman")} | " +
+                    $"Position={transform.position}"
+                );
 
                 if (
                     IsCook() &&
